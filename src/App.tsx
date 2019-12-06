@@ -17,7 +17,7 @@ const App: React.FC = () => {
   }
 
   return (<React.Fragment>
-    <h1>Brace yourself</h1>
+    <h1>PrestoSQL Editor</h1>
     <div className="App"><AceEditor code={code} options={options} /></div>
   </React.Fragment>
   );
