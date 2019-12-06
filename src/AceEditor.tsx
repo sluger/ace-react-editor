@@ -20,7 +20,7 @@ interface AceEditorProps {
 export class AceEditor extends React.Component<AceEditorProps, {}> {
     private aceRef: any;
     private options: Partial<AceEditorOptions> = {};
-    
+
     constructor(props: AceEditorProps) {
         super(props);
         this.aceRef = null;
@@ -44,9 +44,7 @@ export class AceEditor extends React.Component<AceEditorProps, {}> {
 
         Object.entries(this.options).forEach((v: any[]) => {
             editor.setOption(v[0], v[1]);
-        }); 
-        
-        //editor.setOptions(flatOptions);
+        });
     }
 
     render() {
