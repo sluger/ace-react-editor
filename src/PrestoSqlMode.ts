@@ -30,8 +30,7 @@ class PrestoSqlHighlightRules extends ace.require("ace/mode/text_highlight_rules
             "with|select|all|distinct|from|where|group by|having|union|intersect|order by|asc|desc|offset|" +
             "row|rows|limit|fetch|next|only|with ties|on|join|inner join|left join|left outer join|" +
             "right join|right outer join|full join|full outer join|cross join|grouping sets|cube|rollup|" +
-            "as|in|null|nulls|values|tablesample|bernoulli|system|unnest|array|map|ordinality|lateral" +
-            ""
+            "as|in|null|nulls|values|tablesample|bernoulli|system|unnest|array|map|ordinality|lateral"
         );
 
         const builtinConstants = (
