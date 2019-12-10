@@ -1,34 +1,52 @@
+/**
+ * This file provides the custom language mode for PrestoSQL for the ace editor.
+ *
+ * @author Stefan Luger
+ */
 import * as ace from 'ace-builds';
 
+/**
+ * Custom ace mode for the PrestoSQL language.
+ *
+ * @see https://github.com/ajaxorg/ace/wiki/Creating-or-Extending-an-Edit-Mode
+ */
+export default class PrestoSqlMode extends ace.require('ace/mode/text').Mode {
+    constructor() {
+        super();
+        this.HighlightRules = PrestoSqlHighlightRules;
+    }
+}
+
+/**
+ * This class provides the rules to highlight keywords, comments, strings and numbers for the PrestoSQL language.
+ *
+ * @see https://docs.aws.amazon.com/athena/latest/ug/ddl-sql-reference.html
+ */
 class PrestoSqlHighlightRules extends ace.require("ace/mode/text_highlight_rules").TextHighlightRules {
     constructor() {
         super();
 
-        // TODO: define prestosql allowed keywords
-        var keywords = (
-            "select|from|where|and|or|group|by|order|limit|offset|having|as|case|" +
-            "when|then|else|end|type|left|right|join|on|outer|desc|asc|union|create|table|primary|key|if|" +
-            "foreign|not|references|default|null|inner|cross|natural|database|drop|grant"
+        const keywords = (
+            "with|select|all|distinct|from|where|group by|having|union|intersect|order by|asc|desc|offset|" +
+            "row|rows|limit|fetch|next|only|with ties|on|join|inner join|left join|left outer join|" +
+            "right join|right outer join|full join|full outer join|cross join|grouping sets|cube|rollup|" +
+            "as|in|null|nulls|values|tablesample|bernoulli|system|unnest|array|map|ordinality|lateral" +
+            ""
         );
 
-        // TODO: ...
-        var builtinConstants = (
-            "true|false"
+        const builtinConstants = (
+            "null|true|false|and|or|not"
         );
 
-        // TODO: ...
-        var builtinFunctions = (
-            "AVG|COUNT|FIRST|last|max|min|sum|ucase|lcase|mid|len|round|rank|now|format|" +
-            "coalesce|ifnull|isnull|nvl"
+        const builtinFunctions = (
+            "cast|case|end|if|else|then|when|coalesce|nullif|try"
         );
 
-        // TODO: ...
-        var dataTypes = (
-            "int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
-            "money|real|number|integer"
+        const dataTypes = (
+            "boolean|tinyint|smallint|integer|bigint|real|double|decimal|varchar|char|varbinary|json|date|time|timestamp|interval|array|map|row"
         );
 
-        var keywordMapper = this.createKeywordMapper({
+        const keywordMapper = this.createKeywordMapper({
             "support.function": builtinFunctions,
             "keyword": keywords,
             "constant.language": builtinConstants,
@@ -72,12 +90,5 @@ class PrestoSqlHighlightRules extends ace.require("ace/mode/text_highlight_rules
                 regex: "\\s+"
             }]
         };
-    }
-}
-
-export default class PrestoSqlMode extends ace.require('ace/mode/text').Mode {
-    constructor() {
-        super();
-        this.HighlightRules = PrestoSqlHighlightRules;
     }
 }

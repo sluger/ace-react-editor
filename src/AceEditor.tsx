@@ -1,69 +1,113 @@
+/**
+ * @author Stefan Luger
+ */
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as ace from 'ace-builds';
-import PrestoSqlMode from './PrestoSqlMode';
+import { bind } from 'decko';
 
 import 'ace-builds/src-noconflict/theme-eclipse';
 import 'ace-builds/src-noconflict/ext-language_tools';
 
 
-export interface IAceEditorOptions {
-    minLines: number;
-    maxLines: number;
-    enableBasicAutocompletion: boolean;
-    mode: string;
-    theme: string;
-    showPrintMargin: boolean;
+export interface IAceEditorOptions extends Partial<ace.Ace.EditorOptions> {
+
+    /**
+     * Enable auto completion via the language tools.
+     */
+    enableBasicAutocompletion?: boolean;
 }
 
-interface IAceEditorProps {
-    code: string;
-    options?: Partial<IAceEditorOptions>;
+export interface IAceEditorProps {
+    /**
+     * Code snippet or just text the editor is loaded with initially.
+     */
+    value: string;
+
+    /**
+     * Core ace configuration options including language tools.
+     * 
+     * @see https://github.com/ajaxorg/ace/wiki/Configuring-Ace
+     */
+    options?: IAceEditorOptions;
+
+    /**
+     * Set a custom mode via object.
+     */
+    customMode: ace.Ace.SyntaxMode | any;
+
+    /**
+     * An array of autocompletions.
+     */
+    completers: ace.Ace.Completer[];
 }
 
-export class AceEditor extends React.Component<IAceEditorProps, {}> {
-    private aceRef: any;
+/**
+ * Ace editor wrapper which has a reference to the parent HTML element of the editor. 
+ * It sets the custom language mode as well as registers completers.
+ */
+export class AceEditor extends React.Component<IAceEditorProps> {
 
+    /**
+     * Ace editor HTML reference.
+     */
+    private aceRef: HTMLDivElement | null = null;
+
+    /**
+     * Ace editor options.
+     */
     private options: Partial<IAceEditorOptions> = {};
 
+    /**
+     * Ace editor default options.
+     */
     private readonly defaultOptions: IAceEditorOptions = {
-        minLines: 10,
-        maxLines: 20,
-        enableBasicAutocompletion: false,
-        mode: 'ace/mode/text',
-        theme: 'ace/theme/eclipse',
-        showPrintMargin: false
+        enableBasicAutocompletion: false
     }
 
     constructor(props: IAceEditorProps) {
         super(props);
-        this.aceRef = null;
+
+        // override default with actual options
         Object.assign(this.options, this.defaultOptions, this.props.options);
+
+        // do not register custom mode in ace
+        if (this.options != null && this.options.mode === 'ace/mode/prestosql') {
+            this.options.mode = undefined;
+        }
     }
 
     componentDidMount() {
+        // propagate to update logic
+        this.componentDidUpdate(this.props);
+    }
+
+    /**
+     * Retrieve parent HTML node for adding the editor.
+     */
+    componentDidUpdate(props: IAceEditorProps) {
         const node = ReactDOM.findDOMNode(this.aceRef) as HTMLDivElement;
         const editor = ace.edit(node, this.options);
-        const prestoSqlMode = new PrestoSqlMode();
-        editor.getSession().setMode(prestoSqlMode as ace.Ace.SyntaxMode);
-
-        const customKeyWordCompleter = {
-            getCompletions(editor: ace.Ace.Editor, session: ace.Ace.EditSession, pos: ace.Ace.Point, prefix: string, callback: ace.Ace.CompleterCallback) {
-                const state = editor.session.getState(pos.row);
-                let keywordCompletions = (session as any).$mode.getCompletions(state, session, pos, prefix);
-                keywordCompletions = keywordCompletions.map((obj: ace.Ace.Completion) => {
-                    return Object.assign(obj, { value: obj.value.toUpperCase() });
-                });
-                return callback(null, keywordCompletions);
-            },
-        };
-
-        // TODO: quite the dirty solution
-        // replace lowercase keywords completer with custom uppercase completer
-        editor.completers[2] = customKeyWordCompleter;
+        if (props.customMode != null) {
+            this.registerCustomMode(editor);
+        }
     }
 
     render() {
-        return <div ref={(elem) => this.aceRef = elem}>{this.props.code}</div>;
+        return <div ref={(elem) => this.aceRef = elem}>{this.props.value}</div>;
+    }
+
+    /**
+     * Register custom mode and completers.
+     */
+    @bind
+    private registerCustomMode(editor: ace.Ace.Editor) {
+        const { customMode, completers } = this.props;
+        editor.getSession().setMode(customMode as ace.Ace.SyntaxMode);
+        if (this.options.enableBasicAutocompletion) {
+            editor.completers.length = 0;
+            editor.completers.push(...completers);
+        }
     }
 }
